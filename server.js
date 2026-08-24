@@ -1,110 +1,51 @@
-/* ============================================================
-   REPLICA LOGIN ITAÚ - SCRIPT COMPLETO RECONSTRUIDO
-   Compatible con Render + GitHub
-   ============================================================ */
+// ============================================================
+// REPLICA LOGIN ITAÚ - SERVER COMPLETO PARA RENDER + GITHUB
+// Node + Express, estático, listo para deploy
+// ============================================================
 
-/* ------------------------------------------------------------
-   DETECCIÓN DE MODO MÓVIL
------------------------------------------------------------- */
-const isMobile = window.innerWidth <= 768;
-if (isMobile) {
-    console.log("Versión móvil activada");
-}
+const express = require("express");
+const path = require("path");
 
-/* ------------------------------------------------------------
-   SIMULACIÓN DE LOGIN
------------------------------------------------------------- */
-document.getElementById("btnLogin").onclick = () => {
-    const rut = document.getElementById("rut").value;
-    const clave = document.getElementById("clave").value;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-    if (!rut) {
-        alert("Ingresa tu RUT");
-        return;
-    }
-
-    if (!clave) {
-        alert("Ingresa tu clave");
-        return;
-    }
-
-    // Simulación de bifurcación (como el login real)
-    if (rut.startsWith("1")) {
-        alert("Tu usuario pertenece a Corporate (simulado)");
-    } else if (rut.startsWith("2")) {
-        alert("Tu usuario pertenece a Empresas (simulado)");
-    } else {
-        alert("Login simulado OK");
-    }
-};
-
-/* ------------------------------------------------------------
-   SIMULACIÓN DE PRIMER INGRESO
------------------------------------------------------------- */
-document.getElementById("btnPrimerIngresoCorporate").onclick = () => {
-    alert("Primer ingreso Corporate (simulado)");
-};
-
-document.getElementById("btnPrimerIngresoEmpresas").onclick = () => {
-    alert("Primer ingreso Empresas (simulado)");
-};
-
-document.getElementById("btnPrimerIngresoGeneral").onclick = () => {
-    alert("Primer ingreso general (simulado)");
-};
-
-/* ------------------------------------------------------------
-   SIMULACIÓN DE NAVEGACIÓN DEL HEADER
------------------------------------------------------------- */
-document.querySelectorAll(".header-nav a").forEach(link => {
-    link.onclick = (e) => {
-        e.preventDefault();
-        alert("Navegación simulada: " + link.textContent);
-    };
+// ------------------------------------------------------------
+// LOG BÁSICO DE REQUESTS (útil para depuración en Render)
+// ------------------------------------------------------------
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
 });
 
-/* ------------------------------------------------------------
-   SIMULACIÓN DE FORMULARIO OCULTO (equivalente a WPF/Dojo)
------------------------------------------------------------- */
-document.getElementById("btnLocalStorageSubmit")?.addEventListener("click", () => {
-    const form = document.getElementById("frmLocalStorage");
+// ------------------------------------------------------------
+// SERVIR ESTÁTICOS DESDE /public
+// ------------------------------------------------------------
+app.use(express.static(path.join(__dirname, "public")));
 
-    const localStorageValue = localStorage.getItem("cookieAuth") || "empresas";
-    document.getElementById("localStorageHiddenID").value = localStorageValue;
-
-    console.log("Formulario oculto enviado (simulado)");
-    console.log("Valor cookieAuth:", localStorageValue);
+// ------------------------------------------------------------
+// RUTA PRINCIPAL: LOGIN RECONSTRUIDO
+// ------------------------------------------------------------
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* ------------------------------------------------------------
-   SIMULACIÓN DE MODALES (si los agregas)
------------------------------------------------------------- */
-const modalEmpresas = document.getElementById("modalEmpresas");
-const modalCorporate = document.getElementById("modalCorporate");
+// ------------------------------------------------------------
+// RUTA SANDBOX PARA AUTOMATIZACIÓN (OPCIONAL)
+// ------------------------------------------------------------
+app.get("/sandbox", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
-if (modalEmpresas && modalCorporate) {
-    document.getElementById("btnIrCorporate")?.addEventListener("click", () => {
-        alert("Redirigiendo a Corporate (simulado)");
-        modalEmpresas.classList.add("hidden");
-    });
+// ------------------------------------------------------------
+// HEALTHCHECK PARA RENDER
+// ------------------------------------------------------------
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", app: "replica-login-itau" });
+});
 
-    document.getElementById("btnIrEmpresas")?.addEventListener("click", () => {
-        alert("Redirigiendo a Empresas (simulado)");
-        modalCorporate.classList.add("hidden");
-    });
-}
-
-/* ------------------------------------------------------------
-   SIMULACIÓN DE COOKIE DE BIFURCACIÓN
------------------------------------------------------------- */
-const cookieAuth = localStorage.getItem("cookieAuth") || "empresas";
-const boxLogin = document.getElementById("box_login_bifurcacion");
-
-if (cookieAuth !== "false") {
-    boxLogin.style.flexBasis = "auto";
-}
-
-/* ------------------------------------------------------------
-   LOGS DE DEPURACIÓN
------------------------------------------------------------- */
-console.log("Replica Itaú cargada correctamente");
+// ------------------------------------------------------------
+// ARRANQUE DEL SERVER
+// ------------------------------------------------------------
+app.listen(PORT, () => {
+  console.log(`Servidor Replica Itaú escuchando en puerto ${PORT}`);
+});
