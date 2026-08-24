@@ -1,27 +1,105 @@
+/* ============================================================
+   REPLICA LOGIN ITAÚ - CSS COMPLETO RECONSTRUIDO
+   Compatible con Render + GitHub
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   RESET BÁSICO
+------------------------------------------------------------ */
 body {
     background: #f5f5f5;
     font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     margin: 0;
+    padding: 0;
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ------------------------------------------------------------
+   CONTENEDORES GENERALES
+------------------------------------------------------------ */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.col-12 {
+    width: 100%;
+}
+
+.col-sm-8 {
+    width: 100%;
+}
+
+.col-md-6 {
+    width: 50%;
+}
+
+.col-lg-5 {
+    width: 41.66%;
+}
+
+.col-xl-4 {
+    width: 33.33%;
+}
+
+/* ------------------------------------------------------------
+   CABECERA
+------------------------------------------------------------ */
+.itau-header {
+    background: #002d72;
+    padding: 10px 0;
+    color: #fff;
+}
+
+.header-logo img {
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));
+}
+
+.header-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.header-nav a {
+    color: #fff;
+    font-weight: bold;
+}
+
+.header-nav a:hover {
+    text-decoration: underline;
+}
+
+/* ------------------------------------------------------------
+   CONTENEDOR PRINCIPAL
+------------------------------------------------------------ */
+.itau-main-container {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+/* ------------------------------------------------------------
+   LOGIN BOX
+------------------------------------------------------------ */
 .login-box {
     background: #fff;
-    padding: 40px;
-    width: 350px;
+    padding: 30px;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     text-align: center;
 }
 
-.logo {
-    margin-bottom: 20px;
-}
-
-input {
+.login-inputs input {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
@@ -30,7 +108,7 @@ input {
     font-size: 15px;
 }
 
-button {
+.login-inputs button {
     width: 100%;
     padding: 12px;
     background: #ff6a00;
@@ -41,6 +119,158 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+.login-inputs button:hover {
     background: #e55d00;
+}
+
+/* ------------------------------------------------------------
+   BOTONES PRIMER INGRESO
+------------------------------------------------------------ */
+.primer-ingreso-container {
+    margin-top: 20px;
+}
+
+.itau-btn {
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.itau-btn-secondary-corporate,
+.itau-btn-secondary-empresa {
+    background: #e8e8e8;
+    color: #000;
+}
+
+.itau-btn-general {
+    background: #ff6a00;
+    color: #fff;
+}
+
+/* ------------------------------------------------------------
+   COLUMNA SEGURIDAD
+------------------------------------------------------------ */
+.box-container-login {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.security-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.security-item p {
+    margin: 0;
+}
+
+/* ------------------------------------------------------------
+   FOOTER
+------------------------------------------------------------ */
+.footer-login {
+    background: #fff;
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #ddd;
+}
+
+.footer-login a {
+    color: #ff6a00;
+    font-weight: bold;
+}
+
+/* ------------------------------------------------------------
+   MODALES (si los agregas)
+------------------------------------------------------------ */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    width: 350px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* ------------------------------------------------------------
+   VERSIÓN MÓVIL
+------------------------------------------------------------ */
+@media (max-width: 768px) {
+
+    .mobile-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .mobile-full {
+        width: 100%;
+    }
+
+    .mobile-login-box {
+        padding: 20px;
+        box-shadow: none;
+        border-radius: 0;
+        margin-top: 10px;
+    }
+
+    .mobile-security-box {
+        padding: 20px;
+        box-shadow: none;
+        border-radius: 0;
+        background: #fff;
+    }
+
+    .mobile-security-title {
+        font-size: 18px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .login-inputs input {
+        font-size: 16px;
+        padding: 14px;
+    }
+
+    .login-inputs button {
+        font-size: 16px;
+        padding: 14px;
+    }
+
+    .primer-ingreso-container .itau-btn {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .security-item {
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .security-item p {
+        font-size: 14px;
+        line-height: 1.3;
+    }
 }
