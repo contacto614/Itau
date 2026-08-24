@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Replica Login Itaú - Sandbox</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <title>Replica Login Itaú - Sandbox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
 </head>
-
 <body>
 
-<!-- CABECERA -->
 <header class="itau-header">
     <div class="container d-flex align-items-center justify-content-between">
         <div class="header-logo">
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Itau_logo.svg" width="60">
         </div>
-
         <nav class="header-nav">
             <ul class="header-links">
                 <li><a href="#">Personas</a></li>
@@ -26,35 +23,238 @@
     </div>
 </header>
 
-<!-- CONTENEDOR PRINCIPAL -->
 <div class="itau-main-container">
-
     <div class="container">
-
         <div class="row mobile-stack">
 
-            <!-- LOGIN -->
+            <!-- COLUMNA LOGIN + FORMULARIO -->
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4 mobile-full">
                 <div id="box_login_bifurcacion" class="login-box mobile-login-box">
 
                     <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Itau_logo.svg" width="120">
 
-                    <div class="login-inputs">
-                        <input id="rut" type="text" placeholder="RUT">
-                        <input id="clave" type="password" placeholder="Clave">
-                        <button id="btnLogin">Ingresar</button>
-                    </div>
+                    <form id="loginFormID" name="loginPortalForm" method="post" class="form-login">
 
-                    <!-- Botones primer ingreso -->
+                        <!-- RUT EMPRESA -->
+                        <div id="divRutEmpresa" class="margin-bottom-24 d-none">
+                            <label for="rut_empresa">RUT empresa</label>
+                            <input type="text"
+                                   id="rut_empresaID"
+                                   name="rut_empresa"
+                                   maxlength="12"
+                                   autocomplete="off"
+                                   spellcheck="false">
+                            <div class="msg-errores">
+                                <span id="rutEmpresaObligatorio" class="msg-error-input" style="display:none">Campo obligatorio</span>
+                                <span id="errorRutEmpresaLogin" class="msg-error-input" style="display:none">El RUT ingresado es incorrecto</span>
+                            </div>
+                        </div>
+
+                        <!-- RUT USUARIO -->
+                        <div id="divRutUsuario" class="margin-bottom-24">
+                            <label for="rut_usuario">Ingresa tu RUT personal</label>
+                            <input type="text"
+                                   id="rut_usuarioID"
+                                   name="rut_usuario"
+                                   maxlength="12"
+                                   autocomplete="off"
+                                   spellcheck="false">
+                            <span style="display:none;" id="rutDestSinFormato" name="rutDestSinFormato"></span>
+                            <div class="msg-errores">
+                                <span id="rutUsuarioObligatorio" class="msg-error-input" style="display:none;">Campo obligatorio</span>
+                                <span id="errorRutUsuarioLogin" class="msg-error-input" style="display:none;">El RUT ingresado es incorrecto</span>
+                            </div>
+                        </div>
+
+                        <!-- CLAVE INTERNET -->
+                        <div class="margin-bottom-24">
+                            <label for="claveId">Ingresa tu clave internet</label>
+                            <div id="psw">
+                                <div class="visibility-password fix-visibility">
+                                    <input type="password"
+                                           id="claveId"
+                                           name="clavePin"
+                                           maxlength="20"
+                                           class="password-visibility"
+                                           autocomplete="off"
+                                           spellcheck="false">
+                                    <a id="visibilityPassword">Mostrar</a>
+                                    <a id="hiddenPassword" style="display:none">Ocultar</a>
+                                </div>
+                                <div class="msg-errores">
+                                    <span id="claveObligatorio" class="msg-error-input" style="display:none;">Campo obligatorio</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SWITCH EMPRESA -->
+                        <div class="margin-bottom-24 margin-top-24">
+                            <span class="texto-switch">Quiero acceder con RUT empresa</span>
+                            <span id="switch-id">
+                                <label class="switch">
+                                    <input id="new-switch-login"
+                                           name="empresaOCliente"
+                                           type="checkbox"
+                                           value="empresa">
+                                    <span id="sliderEmpresa" class="slider round"></span>
+                                </label>
+                            </span>
+                        </div>
+
+                        <!-- BOTONES LOGIN CORPORATE / EMPRESAS / GENERAL -->
+                        <div class="d-flex justify-content-center mb-24">
+                            <div class="row d-flex justify-content-center w-100">
+                                <div class="col-24 col-md-24 mb-6 w-100">
+                                    <div class="d-flex">
+
+                                        <!-- Corporate -->
+                                        <button id="btnLoginPortalCorporate"
+                                                name="btnLoginPortalCorporate"
+                                                class="itauOne__button itauOne__button--primary--corporate wpfBlueButton"
+                                                type="button"
+                                                style="display:none">
+                                            <div id="loadingLoginPortalCorporate"
+                                                 name="loadingLoginPortalCorporate"
+                                                 class="itauOne__loader"
+                                                 style="display:none">
+                                                <i class="icon-itaufonts_full_atualizando"></i>
+                                                Ingresar
+                                            </div>
+                                            <div id="labelLoginPortalCorporate"
+                                                 name="labelLoginPortalCorporate">Ingresar</div>
+                                        </button>
+
+                                        <button id="btnLoginPortalCorporate2"
+                                                name="btnLoginPortalCorporate2"
+                                                class="itauOne__button itauOne__button--primary--corporate"
+                                                type="button"
+                                                style="display:none;font-size:0.875rem;width:100%!important;margin-right:0px!important;">
+                                            <div id="loadingLoginPortalCorporate2"
+                                                 name="loadingLoginPortalCorporate2"
+                                                 class="itauOne__loader">
+                                                <i class="icon-itaufonts_full_atualizando"></i>
+                                                Ingresar
+                                            </div>
+                                            <div id="labelLoginPortalCorporate2"
+                                                 name="labelLoginPortalCorporate2">Ingresar</div>
+                                        </button>
+
+                                        <!-- Empresas -->
+                                        <button id="btnLoginPortalEmpresas"
+                                                name="btnLoginPortalEmpresas"
+                                                class="itauOne__button itauOne__button--primary--empresa wpfBlueButton"
+                                                type="button"
+                                                style="font-size:0.875rem;width:100%!important;margin-right:0px!important;background:#ec7000">
+                                            <div id="loadingLoginPortalEmpresas"
+                                                 name="loadingLoginPortalEmpresas"
+                                                 class="itauOne__loader"
+                                                 style="display:none">
+                                                <i class="icon-itaufonts_full_atualizando"></i>
+                                                Ingresar
+                                            </div>
+                                            <div id="labelLoginPortalEmpresas"
+                                                 name="labelLoginPortalEmpresas">Ingresar</div>
+                                        </button>
+
+                                        <button id="btnLoginPortalEmpresas2"
+                                                name="btnLoginPortalEmpresas2"
+                                                class="itauOne__button itauOne__button--primary--empresa"
+                                                type="button"
+                                                style="display:none">
+                                            <div id="loadingLoginPortalEmpresas2"
+                                                 name="loadingLoginPortalEmpresas2"
+                                                 class="itauOne__loader">
+                                                <i class="icon-itaufonts_full_atualizando"></i>
+                                                Ingresar
+                                            </div>
+                                            <div id="labelLoginPortalEmpresas2"
+                                                 name="labelLoginPortalEmpresas2">Ingresar</div>
+                                        </button>
+
+                                        <!-- Login general simulado -->
+                                        <button id="btnLogin"
+                                                name="btnLogin"
+                                                class="btn-base btn-termino ancho-100 wpfBlueButton"
+                                                type="button">
+                                            <span>Ingresar</span>
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MENSAJES DE ERROR RUT / PASS -->
+                        <div id="bloqMayusID" class="in-context msg-info padding-10" style="display:none;">
+                            <div class="row-inbox">
+                                <div class="context-icon">
+                                    <i class="icon-itaufonts_informacao sizeM color8"></i>
+                                </div>
+                                <div class="context-content">
+                                    <p>Tecla mayúscula activada</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="mensaje_rut" style="display:none;" class="row">
+                            <div class="col">
+                                <div class="margin-bottom-24 d-none">
+                                    <div class="in-context msg-error">
+                                        <div class="row-inbox">
+                                            <div class="context-icon">
+                                                <i class="icon-itaufonts_exclamacao sizeM color8"></i>
+                                            </div>
+                                            <div class="context-content">
+                                                <p><span id="msgErrorRut" name="msgErrorRut">MensajeError</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="mensaje_pass" style="display:none;" class="row">
+                            <div class="col">
+                                <div class="margin-bottom-24 d-none">
+                                    <div class="in-context msg-error">
+                                        <div class="row-inbox">
+                                            <div class="context-icon">
+                                                <i class="icon-itaufonts_exclamacao sizeM color8"></i>
+                                            </div>
+                                            <div class="context-content">
+                                                <p><span id="msgErrorPass" name="msgErrorPass">MensajeError</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LINK ¿PROBLEMAS CON TU CLAVE? -->
+                        <div class="row">
+                            <div class="col">
+                                <div class="margin-bottom-24 text-center">
+                                    <a id="linkOlvidoClave" class="link_20">
+                                        ¿Problemas con tu clave?
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CAMPOS OCULTOS EQUIVALENTES -->
+                        <span id="tipoLoginEmpresaID" name="tipoLoginEmpresa" type="hidden"></span>
+                        <input id="valueAuthCookie" name="valueAuthCookie" type="hidden">
+
+                    </form>
+
+                    <!-- BOTONES PRIMER INGRESO (RECONSTRUIDOS) -->
                     <div class="primer-ingreso-container mobile-primer-ingreso">
                         <button id="btnPrimerIngresoCorporate" class="itau-btn itau-btn-secondary-corporate">
                             ¿Eres nuevo en Itaú? Crea tu clave
                         </button>
-
                         <button id="btnPrimerIngresoEmpresas" class="itau-btn itau-btn-secondary-empresa">
                             ¿Eres nuevo en Itaú? Crea tu clave
                         </button>
-
                         <a id="btnPrimerIngresoGeneral" href="#" class="itau-btn itau-btn-general">
                             ¿Eres nuevo en Itaú? Crea tu clave
                         </a>
@@ -63,46 +263,35 @@
                 </div>
             </div>
 
-            <!-- SEGURIDAD -->
+            <!-- COLUMNA RECOMENDACIONES SEGURIDAD -->
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4 mobile-full">
                 <div class="box-container-login mobile-security-box">
-
                     <p class="mobile-security-title"><b>Recomendaciones de seguridad</b></p>
-
                     <div class="list-security-login">
-
                         <div class="security-item">
                             <i class="icon-itaufonts_computador_internet sizeS"></i>
-                            <p>Prefiere <b>dispositivos y conexiones seguras</b>.</p>
+                            <p>Prefiere <b>dispositivos y conexiones seguras</b> para ingresar a tu cuenta en itau.cl.</p>
                         </div>
-
                         <div class="security-item">
                             <i class="icon-itaufonts_email_resp_rapida sizeS"></i>
                             <p>Nuestros emails <b>no contienen links ni botones</b>.</p>
                         </div>
-
                         <div class="security-item">
                             <i class="icon-itaufonts_gerente sizeS"></i>
-                            <p><b>Nunca entregues tus claves</b> a terceros.</p>
+                            <p><b>Nunca entregues tus claves</b> de seguridad a terceros.</p>
                         </div>
-
                         <div class="security-item">
                             <i class="icon-itaufonts_senha sizeS"></i>
-                            <p><b>Actualiza tus claves</b> con frecuencia.</p>
+                            <p>Recuerda <b>actualizar tus claves</b> de acceso con frecuencia.</p>
                         </div>
-
                     </div>
-
                 </div>
             </div>
 
         </div>
-
     </div>
-
 </div>
 
-<!-- FOOTER -->
 <footer>
     <div class="footer-login text-center">
         <p>¿En qué te podemos ayudar?
@@ -115,8 +304,6 @@
     </div>
 </footer>
 
-<!-- SCRIPTS -->
 <script src="/script.js"></script>
-
 </body>
 </html>
