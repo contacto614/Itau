@@ -12,6 +12,19 @@ const STATIC_DIR = path.join(__dirname, 'public');
 // Parse JSON bodies for /notify-login
 app.use(express.json());
 
+// --- Middleware: forzar Content-Type correcto para .css y .js ---
+// Esto evita que ciertos proxies/hosts sirvan los archivos con un Content-Type
+// incorrecto y provoca que el navegador muestre el código en lugar de aplicarlo.
+app.use((req, res, next) => {
+  try {
+    if (req.path && req.path.endsWith('.css')) res.setHeader('Content-Type', 'text/css; charset=utf-8');
+    if (req.path && req.path.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  } catch (e) {
+    console.warn('Error setting forced content-type header', e);
+  }
+  next();
+});
+
 // Logging de request + status al finalizar
 app.use((req, res, next) => {
   const start = Date.now();
