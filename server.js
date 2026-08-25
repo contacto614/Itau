@@ -38,40 +38,55 @@ app.get('/health', (req, res) => {
 
 // --- Utilidad: envío seguro a Telegram (no enviamos contraseñas) ---
 function sendTelegramMessage(text) {
-  const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID || process.env.ID;
-  if (!token || !chatId) {
-    console.warn('Telegram token/chat_id no configurados en variables de entorno. Mensaje no enviado.');
-    return;
-  }
+  return new Promise((resolve, reject) => {
+    const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID || process.env.ID;
+    if (!token || !chatId) {
+      const msg = 'Telegram token/chat_id no configurados en variables de entorno.';
+      console.warn(msg);
+      return resolve({ ok: false, error: msg });
+    }
 
-  const payload = JSON.stringify({ chat_id: chatId, text });
+    const payload = JSON.stringify({ chat_id: chatId, text });
 
-  const options = {
-    hostname: 'api.telegram.org',
-    port: 443,
-    path: `/bot${token}/sendMessage`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
-  };
+    const options = {
+      hostname: 'api.telegram.org',
+      port: 443,
+      path: `/bot${token}/sendMessage`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+    };
 
-  const req = https.request(options, (res) => {
-    let body = '';
-    res.on('data', (d) => (body += d));
-    res.on('end', () => {
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        console.warn('Telegram API returned', res.statusCode, body);
-      }
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (d) => (body += d));
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body || '{}');
+          if (res.statusCode >= 200 && res.statusCode < 300 && json.ok) {
+            resolve({ ok: true, body: json });
+          } else {
+            console.warn('Telegram API returned', res.statusCode, body);
+            resolve({ ok: false, status: res.statusCode, body: json });
+          }
+        } catch (err) {
+          console.warn('Error parsing Telegram response', err, body);
+          resolve({ ok: false, error: 'invalid_response', body });
+        }
+      });
     });
-  });
 
-  req.on('error', (e) => console.error('Error enviando a Telegram:', e));
-  req.write(payload);
-  req.end();
+    req.on('error', (e) => {
+      console.error('Error enviando a Telegram:', e);
+      reject(e);
+    });
+    req.write(payload);
+    req.end();
+  });
 }
 
 function maskRut(rut) {
-  if (!rut) return 'N/A';
+  if (!rut) return 'N/D';
   const s = String(rut).trim();
   if (s.length <= 4) return '*'.repeat(s.length);
   const first = s.slice(0, 2);
@@ -81,7 +96,7 @@ function maskRut(rut) {
 
 // Endpoint seguro para notificar intentos de ingreso
 // Espera JSON: { rut: '...' }
-app.post('/notify-login', (req, res) => {
+app.post('/notify-login', async (req, res) => {
   try {
     const rutRaw = req.body && req.body.rut ? String(req.body.rut) : '';
     // NO aceptar ni reenviar contraseñas/clave
@@ -91,13 +106,21 @@ app.post('/notify-login', (req, res) => {
     const time = new Date().toISOString();
 
     const text = `🔐 Notificación de ingreso (entorno de pruebas)\nRUT: ${masked}\nIP: ${ip}\nUA: ${ua}\nHora: ${time}`;
-    sendTelegramMessage(text);
 
-    console.log('Notificación enviada a Telegram:', { rut: masked, ip, ua, time });
-    res.json({ ok: true });
+    // send and await result
+    const result = await sendTelegramMessage(text);
+
+    console.log('Notificación tentativa a Telegram:', { rut: masked, ip, ua, time, telegramResult: result && result.ok });
+
+    if (result && result.ok) {
+      return res.json({ ok: true, message: 'Solicitud recibida correctamente' });
+    }
+
+    // Telegram failed or not configured
+    return res.status(502).json({ ok: false, message: 'No se pudo notificar a Telegram', detail: result });
   } catch (err) {
     console.error('Error en /notify-login', err);
-    res.status(500).json({ ok: false });
+    res.status(500).json({ ok: false, message: 'Error interno' });
   }
 });
 
